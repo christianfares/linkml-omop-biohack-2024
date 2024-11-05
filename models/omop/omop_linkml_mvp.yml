@@ -1,0 +1,47 @@
+name: omop_linkml_mvp
+id: http://example.org/omop_linkml_mvp
+imports:
+- linkml:types
+prefixes:
+  linkml: https://w3id.org/linkml/
+  test_schema: http://example.org/omop_linkml_mvp/
+default_prefix: test_schema
+default_range: string
+
+classes:
+  Person:
+    slots:
+      - person_id
+      - year_of_birth
+      - gender_concept_id
+    slot_usage:
+      person_id:
+        identifier: true
+      
+  Condition_occurrence:
+    slots:
+      - condition_occurrence_id
+      - person_id
+      - condition_source_value
+    slot_usage:
+      condition_occurrence_id:
+        identifier: true
+
+
+# data fields get their own section
+slots:
+  person_id:
+    range: integer
+  year_of_birth:
+    range: integer
+
+
+# optional: schema type extensions
+types:
+  AgeType:
+   ...
+
+# enumerations
+enums:
+  GenderType:
+   ...
