@@ -1,0 +1,50 @@
+name: fhir_schema
+id: "https://example.org/fhir"
+description: "A LinkML representation of key FHIR resources."
+prefixes:
+  test_schema: "https://example.org/fhir#"
+default_prefix: test_schema
+default_range: string
+
+classes:
+  Patient:
+    description: "FHIR resource for patient demographics and identifiers."
+    slots:
+      - id
+      - gender
+    slot_usage:
+      id:
+        identifier: true
+        required: true
+
+  Container:
+    tree_root: true
+    attributes:
+      patients:
+        multivalued: true
+        inlined_as_list: true
+        range: Patient
+
+slots:
+  id:
+    description: "Unique Identifier for Resource"
+    range: string
+    # pattern: [A-Za-z0-9\-\.]{1,64}
+  gender:
+    description: "Gender of the patient"
+    range: string
+    enum: Gender
+    examples:
+      - value: "male"
+      - value: "female"
+      - value: "other"
+      - value: "unknown"
+
+enums:
+  Gender:
+    permissible_values:
+      male
+      female
+      other
+      unknown
+      
