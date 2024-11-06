@@ -15,6 +15,18 @@
         "year_of_birth": 1975,
         "gender_concept_id": 789
       }
-    ]
+    ],
 
+    "condition_occurrences": [
+      {
+        "condition_occurrence_id": 983274,
+        "person_id": 1234,
+        "condition_source_value": "inflammation"
+      },
+      {
+        "condition_occurrence_id": 189432,
+        "person_id": 5678,
+        "condition_source_value": "cancer"
+      }
+    ]
 }

@@ -35,6 +35,10 @@ classes:
         multivalued: true
         inlined_as_list: true
         range: Person
+      condition_occurrences:
+        multivalued: true
+        inlined_as_list: true
+        range: Condition_occurrence 
 
 
 # data fields get their own section
