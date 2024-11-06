@@ -27,7 +27,8 @@ if uploaded_file:
   # To convert to a string based IO:
   stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
   st.write('File Preview:')
-  st.code(stringio.read(), language='tsv', line_numbers=True)
+  with st.container(height=500):
+    st.code(stringio.read(), language='tsv', line_numbers=True)
 
   output_model = st.selectbox('Select the model for the output file', ['OMOP', 'Phenopackets', 'B1MG'])
 
@@ -42,7 +43,6 @@ st.divider()
 if st.session_state.is_converting:
   with st.spinner('Converting...'):
     # TODO - While running LinkML..
-    # time.sleep(5)
     st.session_state.is_converting = False
     st.session_state.is_converted = True
     st.success('Conversion Completed!')

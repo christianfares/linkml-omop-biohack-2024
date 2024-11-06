@@ -22,6 +22,8 @@ description: ConditionOccurence
 id: https://w3id.org/ConditionOccurence
 imports:
 - linkml:types
+- concept
+- person
 name: ConditionOccurence
 prefixes:
   ConditionOccurence: https://w3id.org/ConditionOccurence
@@ -67,7 +69,7 @@ slots:
   person_id:
     examples:
     - value: '1837743'
-    range: integer
+    range: Person
   provider_id:
     examples:
     - value: '284846'

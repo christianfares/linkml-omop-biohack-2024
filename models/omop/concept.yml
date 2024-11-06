@@ -1,4 +1,3 @@
-PROFILER:  CsvDataGeneralizer(identifier_slots=[], depluralize_class_names=False, inflect_engine=<inflect.engine object at 0x100f10f70>, column_separator='\t', schema_name='example', robot=False, data_dictionary_row_count=0, enum_columns=[], enum_mask_columns=[], enum_threshold=0.1, enum_strlen_threshold=30, max_enum_size=50, downcase_header=False, snakecase_header=False, infer_foreign_keys=False, max_pk_len=60, min_distinct_fk_val=8, source_schema=None)
 classes:
   Concept:
     slots:
@@ -57,6 +56,7 @@ slots:
     examples:
     - value: deactivated. See X08
     range: string
+    required: true
   domain_id:
     examples:
     - value: Condition
