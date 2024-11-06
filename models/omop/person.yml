@@ -25,6 +25,7 @@ description: Person
 id: https://w3id.org/Person
 imports:
 - linkml:types
+- concept
 name: Person
 prefixes:
   Person: https://w3id.org/Person
