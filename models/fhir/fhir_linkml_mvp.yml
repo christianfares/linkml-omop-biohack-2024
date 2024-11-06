@@ -12,9 +12,25 @@ classes:
     slots:
       - id
       - gender
+      - birthDate
     slot_usage:
       id:
         identifier: true
+        required: true
+
+  Condition:
+    description: "A clinical condition, problem, diagnosis, or other event, situation, issue, or clinical concept that has risen to a level of concern."
+    slots:
+      - id
+      - code
+      - subject
+      - onsetDateTime
+    slot_usage:
+      id:
+        identifier: true
+        required: true
+      subject:
+        range: Patient
         required: true
 
   Container:
@@ -25,13 +41,15 @@ classes:
         inlined_as_list: true
         range: Patient
 
+
 slots:
   id:
     description: "Unique Identifier for Resource"
     range: string
     # pattern: [A-Za-z0-9\-\.]{1,64}
+
   gender:
-    description: "Gender of the patient"
+    description: "Administrative Gender - the gender that the patient is considered to have for administration and record keeping purposes."
     range: string
     enum: Gender
     examples:
@@ -39,6 +57,23 @@ slots:
       - value: "female"
       - value: "other"
       - value: "unknown"
+
+  birthDate:
+    description: "Date of birth of the patient"
+    range: date
+
+  code:
+    description: "Code identifying condition"
+    range: string
+
+  subject:
+    description: "Reference to the subject (patient) of the observation"
+    range: Patient
+
+  onsetDateTime:
+    description: "Date and time when the condition started."
+    range: date
+
 
 enums:
   Gender:
