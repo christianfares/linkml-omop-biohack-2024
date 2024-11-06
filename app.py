@@ -6,8 +6,10 @@ import time
 import sys
 import json
 import yaml
+import pandas
 from linkml_runtime.utils.schema_as_dict import schema_as_dict
 from schema_automator.generalizers.csv_data_generalizer import CsvDataGeneralizer
+from schema_builders.omop.transformer import convert_to_standard
 
 INPUT_FILENAME = 'input.tsv'
 
@@ -24,13 +26,22 @@ def convert():
   st.session_state.is_converting = True
   st.session_state.is_converted = False
 
-def format_output_data(format):
+def format_output_data(format, uploaded_file):
   schema = profiler.convert(file=INPUT_FILENAME, class_name='ClassName', schema_name='SchemeName')
-  # TODO - transform schema into actual output
+  df = pandas.read_csv(uploaded_file, sep='\t')
+  omop_rows = df.apply(lambda row: convert_to_standard(row[['sex', 'age', 'disease']].to_dict()), axis=1)
+  persons = [item['person'] for item in omop_rows]
+  concept_occurences = [item['condition_occurence'] for item in omop_rows]
+
+  all = {
+    'persons': persons,
+    'concept_occurences': concept_occurences
+  }
+
   if format == 'YAML':
-    return yaml.safe_dump(schema_as_dict(schema), sort_keys=False)
+    return yaml.safe_dump(all, sort_keys=False)
   elif format == 'JSON':
-    return json.dumps(schema_as_dict(schema))
+    return json.dumps(all)
   else:
     return 'Hello world?'
 
@@ -88,7 +99,7 @@ if st.session_state.is_converting:
 if uploaded_file and st.session_state.is_converted:
   st.download_button(
     label=f"Download {output_format}",
-    data=format_output_data(output_format),
+    data=format_output_data(output_format, uploaded_file),
     file_name=format_output_extension(output_format),
     mime=format_output_mimetype(output_format),
   )
