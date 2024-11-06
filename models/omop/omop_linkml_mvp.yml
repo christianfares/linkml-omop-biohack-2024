@@ -17,6 +17,7 @@ classes:
     slot_usage:
       person_id:
         identifier: true
+        required: true
       
   Condition_occurrence:
     slots:
@@ -27,6 +28,14 @@ classes:
       condition_occurrence_id:
         identifier: true
 
+  Container:
+    tree_root: true
+    attributes:
+      persons:
+        multivalued: true
+        inlined_as_list: true
+        range: Person
+
 
 # data fields get their own section
 slots:
@@ -34,14 +43,19 @@ slots:
     range: integer
   year_of_birth:
     range: integer
+  gender_concept_id:
+    range: integer
+  condition_occurrence_id:
+    range: integer
+  condition_source_value:
+    range: string # varchar(50)
 
+# # optional: schema type extensions
+# types:
+#   AgeType:
+#    ...
 
-# optional: schema type extensions
-types:
-  AgeType:
-   ...
-
-# enumerations
-enums:
-  GenderType:
-   ...
+# # enumerations
+# enums:
+#   GenderType:
+#    ...
