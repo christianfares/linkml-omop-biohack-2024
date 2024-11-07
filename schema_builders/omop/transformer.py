@@ -3,14 +3,9 @@ from linkml_map.session import Session
 from linkml.utils.schema_builder import SchemaBuilder
 import random
 from datetime import datetime
+from pydantic import ConfigDict
 
-def convert_to_standard(standard_model_data: dict) -> dict:
-  report = validate(standard_model_data, 'models/cohort/cohort.yml', 'DataDictionary')
-  print(report)
-  for r in report.results:
-    if r.severity == 'ERROR':
-      raise Exception(r.message)
-
+def map_standard_to_omop(standard_model_data: dict) -> dict:
   maleConceptId = 1
   femaleConceptId = 2
   otherConceptId = 0
@@ -82,3 +77,70 @@ def convert_to_standard(standard_model_data: dict) -> dict:
     'person': person_session.transform(person_occurence),
     'condition_occurence': condition_occurence_session.transform(person_occurence),
   }
+
+def map_standard_to_fhir(standard_model_data: dict) -> dict:
+
+  codable_concept_session = Session()
+  codable_concept_session.set_source_schema('models/cohort/cohort.yml')
+  codable_concept_session.set_object_transformer(f"""
+    class_derivations:
+      CodableConcept:
+        populated_from: DataDictionary
+        slot_derivations:
+          text:
+            populated_from: disease
+    """)
+
+  condition_session = Session()
+  condition_session.set_source_schema('models/cohort/cohort.yml')
+  condition_session.set_object_transformer(f"""
+    class_derivations:
+      Condition:
+        populated_from: DataDictionary
+        slot_derivations:
+          id:
+            range: integer
+            expr: str({random.randint(1, 1000)})
+          code:
+            expr: None
+          subject:
+            expr: None
+          onsetDateTime:
+            range: integer
+            expr: {datetime.now().year} - {{age}}
+    """)
+  
+  patient_session = Session()
+  patient_session.set_source_schema('models/cohort/cohort.yml')
+  patient_session.set_object_transformer(f"""
+    class_derivations:
+      Patient:
+        populated_from: DataDictionary
+        slot_derivations:
+          id:
+            range: string
+            expr: str({random.randint(1, 1000)})
+          gender:
+            expr: sex
+          birthDate:
+            range: integer
+            expr: {datetime.now().year} - {{age}}
+    """)
+
+  condition = condition_session.transform(standard_model_data);
+  condition['subject'] = patient_session.transform(standard_model_data)
+  condition['code'] = codable_concept_session.transform(standard_model_data)
+  return condition
+
+def convert_to_standard(standard_model_data: dict, model_name: str) -> dict:
+  report = validate(standard_model_data, 'models/cohort/cohort.yml', 'DataDictionary')
+  for r in report.results:
+    if r.severity == 'ERROR':
+      raise Exception(r.message)
+    
+  if model_name == 'OMOP':
+    return map_standard_to_omop(standard_model_data)
+  if model_name == 'FHIR':
+    return map_standard_to_fhir(standard_model_data)
+  else:
+    raise Exception(f'Unknown model name: {model_name}')

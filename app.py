@@ -13,35 +13,38 @@ from schema_builders.omop.transformer import convert_to_standard
 
 INPUT_FILENAME = 'input.tsv'
 
-profiler = CsvDataGeneralizer()
-
 if 'is_converting' not in st.session_state:
   st.session_state.is_converting = False
 if 'is_converted' not in st.session_state:
   st.session_state.is_converted = False
 if 'data' not in st.session_state:
-  st.session_state.data = "Placeholder data"
+  st.session_state.data = None
+
+def reset():
+  st.session_state.is_converted = False
+  st.session_state.data = None
 
 def convert():
   st.session_state.is_converting = True
   st.session_state.is_converted = False
 
-def format_output_data(format, uploaded_file):
-  schema = profiler.convert(file=INPUT_FILENAME, class_name='ClassName', schema_name='SchemeName')
+def format_output_data(format, model, uploaded_file):
   df = pandas.read_csv(uploaded_file, sep='\t')
-  omop_rows = df.apply(lambda row: convert_to_standard(row[['sex', 'age', 'disease']].to_dict()), axis=1)
-  persons = [item['person'] for item in omop_rows]
-  concept_occurences = [item['condition_occurence'] for item in omop_rows]
-
-  all = {
-    'persons': persons,
-    'concept_occurences': concept_occurences
-  }
+  converted_rows = df.apply(lambda row: convert_to_standard(row[['sex', 'age', 'disease']].to_dict(), model), axis=1)
+  if (model == 'OMOP'):
+    persons = [item['person'] for item in converted_rows]
+    concept_occurences = [item['condition_occurence'] for item in converted_rows]
+    data = {
+      'persons': persons,
+      'concept_occurences': concept_occurences
+    }
+  if model == 'FHIR':
+    data = list(converted_rows)
 
   if format == 'YAML':
-    return yaml.safe_dump(all, sort_keys=False)
+    return yaml.safe_dump(data, sort_keys=False)
   elif format == 'JSON':
-    return json.dumps(all)
+    return json.dumps(data)
   else:
     return 'Hello world?'
 
@@ -62,7 +65,7 @@ def format_output_mimetype(format):
     return 'text/plain'
 
 st.header('Data Model Conversion')
-uploaded_file = st.file_uploader("Upload a file to convert")
+uploaded_file = st.file_uploader("Upload a file to convert", type=['tsv'])
 
 if uploaded_file:
   # File path located at => uploaded_file._file_urls.upload_url
@@ -77,8 +80,8 @@ if uploaded_file:
   with st.container(height=500):
     st.code(stringio.read(), language='tsv', line_numbers=True)
 
-  output_model = st.selectbox('Select the model the input file should conform to', ['OMOP', 'Phenopackets', 'B1MG'])
-  output_format = st.selectbox('Select the output file format', ['JSON', 'YAML'])
+  output_model = st.selectbox('Select the model the input file should conform to', ['OMOP', 'FHIR', 'Phenopackets', 'B1MG'])
+  output_format = st.selectbox('Select the output file format', ['JSON', 'YAML'], on_change=reset)
 
 st.button(
   'Convert',
@@ -90,16 +93,15 @@ st.divider()
 
 if st.session_state.is_converting:
   with st.spinner('Converting...'):
-    # TODO - While running LinkML..
-    st.session_state.data = stringio
+    st.session_state.data = format_output_data(output_format, output_model, uploaded_file)
     st.session_state.is_converting = False
     st.session_state.is_converted = True
     st.success('Conversion Completed!')
 
-if uploaded_file and st.session_state.is_converted:
+if uploaded_file and st.session_state.is_converted and st.session_state.data:
   st.download_button(
     label=f"Download {output_format}",
-    data=format_output_data(output_format, uploaded_file),
+    data=st.session_state.data,
     file_name=format_output_extension(output_format),
     mime=format_output_mimetype(output_format),
   )
