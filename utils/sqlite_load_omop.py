@@ -3,14 +3,14 @@ import csv
 import sys
 import os
 
-tables = ["person","observation_period","visit_occurrence","visit_detail","condition_occurrence","drug_exposure","procedure_occurrence","device_exposure","measurement","observation","death","note","note_nlp","specimen","fact_relationship","location","care_site","provider","payer_plan_period","cost","drug_era","dose_era","condition_era","episode","episode_event","metadata","cdm_source","concept","vocabulary","domain","concept_class","concept_relationship","relationship","concept_synonym","concept_ancestor","source_to_concept_map","drug_strength","cohort","cohort_definition"]
+tables = ["person","observation_period","condition_occurrence","drug_exposure","procedure_occurrence","device_exposure","observation","death","drug_era","dose_era","condition_era"]
 
 # Specify the order of SQL files to load
 sql_files = [
     'OMOPCDM_sqlite_5.4_ddl.sql',          # Define tables and columns
-    'OMOPCDM_sqlite_5.4_primary_keys.sql',  # Define primary keys if separate
-    'OMOPCDM_sqlite_5.4_constraints.sql',   # Add constraints like foreign keys
-    'OMOPCDM_sqlite_5.4_indexes.sql'        # Add indexes
+    # 'OMOPCDM_sqlite_5.4_primary_keys.sql',  # Define primary keys if separate
+    # 'OMOPCDM_sqlite_5.4_constraints.sql',   # Add constraints like foreign keys
+    # 'OMOPCDM_sqlite_5.4_indexes.sql'        # Add indexes
 ]
 
 def execute_sql_file(conn, file_path):
@@ -62,7 +62,9 @@ db_name = f'models/omop/omop_{sys.argv[1]}.db'
 load_sql_files_in_order(db_name, sql_files)
 
 # Step 2: load data
+
 path = f'example-data/omop/subset_{sys.argv[1]}'
 for i in tables:
+    print( os.path.join(path,f'omop_{i}.tsv'))
     load_tsv_to_table(db_name, os.path.join(path,f'omop_{i}.tsv'), i)
 

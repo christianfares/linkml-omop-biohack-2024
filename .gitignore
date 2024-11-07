@@ -163,3 +163,4 @@ cython_debug/
 
 example-data/omop/full_tables/
 example-data/omop/subset_50/
+models/omop/*.db
