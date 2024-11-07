@@ -33,10 +33,10 @@ def format_output_data(format, model, uploaded_file):
   converted_rows = df.apply(lambda row: convert_to_standard(row[['sex', 'age', 'disease']].to_dict(), model), axis=1)
   if (model == 'OMOP'):
     persons = [item['person'] for item in converted_rows]
-    concept_occurences = [item['condition_occurence'] for item in converted_rows]
+    condition_occurences = [item['condition_occurence'] for item in converted_rows]
     data = {
       'persons': persons,
-      'concept_occurences': concept_occurences
+      'condition_occurences': condition_occurences
     }
   if model == 'FHIR':
     data = list(converted_rows)
@@ -80,7 +80,7 @@ if uploaded_file:
   with st.container(height=500):
     st.code(stringio.read(), language='tsv', line_numbers=True)
 
-  output_model = st.selectbox('Select the model the input file should conform to', ['OMOP', 'FHIR', 'Phenopackets', 'B1MG'])
+  output_model = st.selectbox('Select the model the file should conform to', ['OMOP', 'FHIR', 'Phenopackets', 'B1MG'])
   output_format = st.selectbox('Select the output file format', ['JSON', 'YAML'], on_change=reset)
 
 st.button(
