@@ -3,17 +3,22 @@ import csv
 import sys
 import os
 
-# tables = ["person","observation_period","condition_occurrence","drug_exposure","procedure_occurrence","device_exposure","observation","death","drug_era","dose_era","condition_era"]
-tables = ["care_site","concept_ancestor","concept_class","concept_relationship","concept","cost","domain","drug_strength","location","provider","relationship","vocabulary"]
+"""
+This script was built for OMOP v5.4 https://ohdsi.github.io/CommonDataModel/cdm54.html
+Synthetic data obtained from https://redivis.com/datasets/ye2v-6skh7wdr7/tables
+"""
 
-# Specify the order of SQL files to load
+# Usage: python3 utils/sqlite_load_omop.py
+# Then you can view the sqlite database by running:
+# sqlite3 omop_full.db 
+# select * from person; 
+# etc. etc.
+
+tables = ["person","observation_period","condition_occurrence","drug_exposure","procedure_occurrence","device_exposure","observation","death","location","care_site","provider","cost","drug_era","dose_era","condition_era","concept","vocabulary","domain","concept_class","concept_relationship","relationship","concept_ancestor","drug_strength"]
+
 sql_files = [
-    'OMOPCDM_sqlite_5.4_ddl.sql',          # Define tables and columns
-    'OMOPCDM_sqlite_5.4_constraints.sql',   # Add constraints like foreign keys
-    # 'OMOPCDM_sqlite_5.4_indices.sql'        # Add indexes
-    # 'OMOPCDM_sqlite_5.4_primary_keys.sql',  # Define primary keys if separate
+    'OMOPCDM_sqlite_5.4_ddl.sql',   
 ]
-
 def execute_sql_file(conn, file_path):
     """Execute SQL commands from a file on an SQLite connection."""
     with open(file_path, 'r') as sql_file:
@@ -39,7 +44,6 @@ def load_sql_files_in_order(db_name, sql_files):
     conn.close()
     print("All SQL files executed successfully.")
 
-
 def load_tsv_to_table(db_name, tsv_file_path, table_name):
     """Load data from a TSV file into a specified table in the SQLite database."""
     conn = sqlite3.connect(db_name)
@@ -56,22 +60,17 @@ def load_tsv_to_table(db_name, tsv_file_path, table_name):
         # insert rows
         for row in reader:
             cursor.execute(insert_sql, row)
-
     conn.commit()
     conn.close()
     print(f"Loaded data from {tsv_file_path} into {table_name} table.")
 
+db_name = f'models/omop/omop_full.db'
 
-
-
-db_name = f'models/omop/omop_{sys.argv[1]}.db'
-
-# creat the tables
+# stepp 1: creat the tables
 load_sql_files_in_order(db_name, sql_files)
 
-# # Step 2: load data
-# path = f'example-data/omop/full_tables'
-# for i in tables:
-#     print( os.path.join(path,f'omop_{i}.tsv'))
-#     load_tsv_to_table(db_name, os.path.join(path,f'omop_{i}.tsv'), i)
-
+# Step 2: load data
+path = f'example-data/omop/full_tables'
+for i in tables:
+    print( os.path.join(path,f'omop_{i}.tsv'))
+    load_tsv_to_table(db_name, os.path.join(path,f'omop_{i}.tsv'), i)

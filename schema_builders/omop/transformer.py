@@ -144,3 +144,34 @@ def convert_to_standard(standard_model_data: dict, model_name: str) -> dict:
     return map_standard_to_fhir(standard_model_data)
   else:
     raise Exception(f'Unknown model name: {model_name}')
+  
+def convert_fhir_to_standard(data: dict):
+  session = Session()
+  session.set_source_schema('models/fhir/fhir_linkml_mvp.yml')
+  report = validate(data, 'models/fhir/fhir_linkml_mvp.yml', 'Container')
+  session.set_object_transformer(f"""
+    class_derivations:
+      DataDictionary:
+        populated_from: Condition
+        slot_derivations:
+          age:
+            expr: onsetDateTime - subject.birthDate
+            range: integer
+          gender:
+            expr: subject.gender
+            range: string
+          disease:
+            expr: code.text
+            range: string
+      Container:
+        name: Container
+        populated_from: Container
+        slot_derivations:
+          persons:
+            name: persons
+            populated_from: conditions
+    """)
+  print(session.target_schema)
+  mapped_data = session.transform(data)
+  print(mapped_data)
+  return mapped_data
